@@ -1,0 +1,22 @@
+service: cvs-tsk-transform-tech-records
+useDotenv: true
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
+  - serverless-dotenv-plugin
+  # - serverless-offline-aws-eventbridge
+
+provider:
+  profile: ${env:AWS_PROVIDER_PROFILE, 'default'}
+  name: aws
+  runtime: nodejs14.x
+  stage: ${env:NODE_ENV, 'local'}
+  region: ${env:AWS_REGION, 'local'}
+  # To load environment variables externally
+  # copy ./config/.env.example to ./.env.local.
+  environment:
+    SERVICE_VERSION: ${env:API_VERSION}
+    AWS_REGION: ${self:provider.region}
+    AWS_STAGE: ${self:provider.stage}
+    SERVICE: ${self:service}
