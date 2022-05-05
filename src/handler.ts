@@ -10,15 +10,21 @@ interface NewKeyStructure {
   [index: string]: string | boolean | number | Array<string>;
 }
 
+interface LegacyKeyStructure {
+  [index: string]: string | boolean | number | Array<string> | Array<LegacyKeyStructure> | LegacyKeyStructure;
+}
+
 export interface LegacyTechRecord {
   systemNumber: string,
   vin: string,
   primaryVrm: string,
   partialVin: string,
+  trailerID?: string,
+  secondaryVrms: string[]
   techRecord: SingleTechRecord[]
 }
 
-interface SingleTechRecord extends NewKeyStructure {
+interface SingleTechRecord extends LegacyKeyStructure {
   createdAt: string;
 }
 
