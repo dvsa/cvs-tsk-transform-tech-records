@@ -17,11 +17,9 @@ export interface LegacyTechRecord {
   techRecord: SingleTechRecord[]
 }
 
-interface SingleTechRecord {
+interface SingleTechRecord extends NewKeyStructure {
   createdAt: string;
 }
-
-
 
 const isValidValue = (a: unknown) => {
   return a !== null && a !== undefined && (_.isString(a) || _.isNumber(a) || _.isBoolean(a));
@@ -103,17 +101,16 @@ const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
         await (client.put({
           TableName: process.env.target_table,
           Item: newRecord,
-        })).promise()
+        })).promise();
         sendResponse.SuccessCount++;
         logger.info('Test record pushed to Dynamo');
-      }
-      catch (error) {
+      } catch (error) {
         sendResponse.FailCount++;
         logger.error('', error);
       }
     }
   }
   logger.info(`Data processed successfully; good: ${sendResponse.SuccessCount}, bad: ${sendResponse.FailCount}`);
-}
+};
 
 export { handler, createTimestampRecord };
