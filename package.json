@@ -26,7 +26,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.1126.0",
+    "aws-sdk": "^2.1128.0",
+    "lodash": "^4.17.21",
     "winston": "^3.7.2"
   },
   "devDependencies": {
