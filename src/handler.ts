@@ -2,6 +2,7 @@ import { DynamoDBStreamEvent } from 'aws-lambda';
 import { DynamoDB } from 'aws-sdk';
 import _ from 'lodash';
 import logger from './util/logger';
+import config from './config';
 
 const client = new DynamoDB.DocumentClient();
 
@@ -99,7 +100,7 @@ const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
       const newRecord = createTimestampRecord(newImage, record);
       try {
         await (client.put({
-          TableName: process.env.target_table,
+          TableName: config.dynamoDb.target,
           Item: newRecord,
         })).promise();
         sendResponse.SuccessCount++;
