@@ -658,11 +658,11 @@ const twoTechRecordsEvent: DynamoDBStreamEvent = {
               },
             },
           ],
-        }
-      }
-    }
-  }]
-}
+        },
+      },
+    },
+  }],
+};
 
 describe('handler', () => {
   beforeEach(() => {
@@ -673,10 +673,10 @@ describe('handler', () => {
     // @ts-ignore
     const consoleSpy = jest.spyOn(console._stdout, 'write');
 
-    await _.handler(removeEvent)
+    await _.handler(removeEvent);
 
-    expect(consoleSpy).toHaveBeenNthCalledWith(2,`info: remove event - ignoring${EOL}`)
-    expect(consoleSpy).toHaveBeenNthCalledWith(3,`info: Data processed successfully; good: 0, bad: 0${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: remove event - ignoring${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(3, `info: Data processed successfully; good: 0, bad: 0${EOL}`);
   });
 
   it('should process INSERT stream events and put to dynamodb', async () => {
@@ -690,8 +690,8 @@ describe('handler', () => {
       };
     });
 
-    await _.handler(insertEvent)
-    expect(consoleSpy).toHaveBeenNthCalledWith(2,`info: processing 1 records${EOL}`)
+    await _.handler(insertEvent);
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: processing 1 records${EOL}`);
     expect(consoleSpy).toHaveBeenNthCalledWith(5, `info: Data processed successfully; good: 1, bad: 0${EOL}`);
   });
 
@@ -707,9 +707,9 @@ describe('handler', () => {
     });
 
     await _.handler(twoTechRecordsEvent);
-    expect(consoleSpy).toHaveBeenNthCalledWith(2,`info: processing 2 records${EOL}`)
-    expect(consoleSpy).toHaveBeenNthCalledWith(7,`info: Data processed successfully; good: 2, bad: 0${EOL}`)
-  })
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: processing 2 records${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(7, `info: Data processed successfully; good: 2, bad: 0${EOL}`);
+  });
 
   it('should catch error and not put to dynamodb', async () => {
     // @ts-ignore
@@ -723,7 +723,7 @@ describe('handler', () => {
     });
     
     await _.handler(insertEvent);
-    expect(consoleSpy).toHaveBeenNthCalledWith(2,`info: processing 1 records${EOL}`)
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: processing 1 records${EOL}`);
     expect(consoleSpy).toHaveBeenNthCalledWith(5, `info: Data processed successfully; good: 0, bad: 1${EOL}`);
   });
 });
