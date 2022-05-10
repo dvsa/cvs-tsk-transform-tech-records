@@ -3,7 +3,7 @@ export default {
       logLevel: process.env.LOG_LEVEL || 'info',
     },
     dynamoDb : {
-      target: process.env.target_table || ''
+      target: process.env.TARGET_TABLE || ''
     }
 };
   
