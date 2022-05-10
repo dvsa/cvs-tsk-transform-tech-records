@@ -7,7 +7,7 @@ const isValidValue = (a: unknown) => {
   return a !== null && a !== undefined && (_.isString(a) || _.isNumber(a) || _.isBoolean(a));
 };
 
-const flattenAttributes = (vehicle: NewKeyStructure, recordPiece: any, prefix: string) => {
+const flattenAttributes = (vehicle: NewKeyStructure, recordPiece: object, prefix: string) => {
   if (recordPiece === null || recordPiece === undefined) {
     return;
   }
@@ -33,7 +33,7 @@ const flattenAttributes = (vehicle: NewKeyStructure, recordPiece: any, prefix: s
         flattenAttributes(vehicle, value, fullKey);
       }
     } else if (isValidValue(value)) {
-      vehicle[fullKey] = value as string | boolean | number;
+      vehicle[fullKey.toString()] = value as string | boolean | number;
     }
   }
 
@@ -48,7 +48,7 @@ export const createTimestampRecord = (newImage: LegacyTechRecord, record: Single
     
   for (const [key, value] of Object.entries(newImage)) {
     if (key !== 'techRecord' && isValidValue(key)) {
-      vehicle[key] = value as string | boolean | number;
+      vehicle[key.toString()] = value as string | boolean | number;
     }
   }
     
