@@ -2,7 +2,7 @@
   "name": "cvs-tsk-transform-tech-records",
   "version": "1.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/handler.ts",
   "scripts": {
     "lint": "npm run lint:analyse && npm run lint:report",
     "lint:analyse": "eslint . --ext js,ts --fix",
