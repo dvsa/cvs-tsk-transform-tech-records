@@ -15,7 +15,7 @@ const flattenAttributes = (vehicle: NewKeyStructure, recordPiece: object, prefix
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   for (const [key, value] of Object.entries(recordPiece)) {
     if (value === null || value === undefined) {
-      logger.info(`skipping ${key}`);
+      logger.debug(`skipping ${key}`);
       continue;
     }
     const fullKey = `${prefix}_${key}`;

@@ -36,7 +36,7 @@ const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
           Item: newRecord,
         })).promise();
         sendResponse.SuccessCount++;
-        logger.info('Test record pushed to Dynamo');
+        logger.info('Tech record pushed to Dynamo');
       } catch (error) {
         sendResponse.FailCount++;
         logger.error('', error);
