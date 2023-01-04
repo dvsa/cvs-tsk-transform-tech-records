@@ -4,21 +4,9 @@ import { LegacyVehicleRecord, LegacyTechnicalRecord } from './interfaces/LegacyV
 import { NewVehicleRecord } from './interfaces/NewVehicleRecord';
 import { PrimitiveTypes } from './interfaces/PrimitiveTypes';
 
-const isDefined = (a: unknown) => {
-  return typeof a !== 'undefined';
-};
-
 const flattenAttributes = (vehicle: NewVehicleRecord, recordPiece: object, prefix: string) => {
-  if (!isDefined(recordPiece)) {
-    return;
-  }
-  
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   for (const [key, value] of Object.entries(recordPiece)) {
-    if (!isDefined(value)) {
-      logger.debug(`skipping ${key}`);
-      continue;
-    }
     const fullKey = `${prefix}_${key}`;
 
     if (!_.isObject(value)) {
@@ -34,7 +22,7 @@ const flattenAttributes = (vehicle: NewVehicleRecord, recordPiece: object, prefi
     value.forEach((arrItem, index) => {
       if (_.isObject(arrItem)) {
         flattenAttributes(vehicle, arrItem, `${fullKey}_${index}`);
-      } else if (isDefined(arrItem)) {
+      } else {
         vehicle[`${fullKey}_${index}`] = arrItem as PrimitiveTypes;
       }
     });
@@ -50,7 +38,7 @@ export const createTimestampRecord = (newImage: LegacyVehicleRecord, record: Leg
   };
     
   for (const [key, value] of Object.entries(newImage)) {
-    if (key !== 'techRecord' && isDefined(key)) {
+    if (key !== 'techRecord') {
       vehicle[key.toString()] = value as PrimitiveTypes;
     }
   }

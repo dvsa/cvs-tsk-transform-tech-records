@@ -7,7 +7,7 @@ interface LegacyIndexSignature {
 interface LegacyVehicleRecord {
   systemNumber: string,
   vin: string,
-  primaryVrm: string,
+  primaryVrm?: string,
   partialVin: string,
   trailerID?: string,
   secondaryVrms: string[]
