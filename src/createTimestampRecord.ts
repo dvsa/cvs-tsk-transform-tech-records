@@ -1,54 +1,55 @@
 import logger from './util/logger';
 import _ from 'lodash';
-import { LegacyTechRecord, SingleTechRecord } from './Interfaces/ILegacyTechRecord';
-import { NewKeyStructure } from './Interfaces/INewTechRecord';
+import { LegacyVehicleRecord, LegacyTechnicalRecord } from './interfaces/LegacyVehicleRecord';
+import { NewVehicleRecord } from './interfaces/NewVehicleRecord';
+import { PrimitiveTypes } from './interfaces/PrimitiveTypes';
 
-const isValidValue = (a: unknown) => {
-  return a !== null && a !== undefined && (_.isString(a) || _.isNumber(a) || _.isBoolean(a));
+const isDefined = (a: unknown) => {
+  return typeof a !== 'undefined';
 };
 
-const flattenAttributes = (vehicle: NewKeyStructure, recordPiece: object, prefix: string) => {
-  if (recordPiece === null || recordPiece === undefined) {
+const flattenAttributes = (vehicle: NewVehicleRecord, recordPiece: object, prefix: string) => {
+  if (!isDefined(recordPiece)) {
     return;
   }
   
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   for (const [key, value] of Object.entries(recordPiece)) {
-    if (value === null || value === undefined) {
+    if (!isDefined(value)) {
       logger.debug(`skipping ${key}`);
       continue;
     }
     const fullKey = `${prefix}_${key}`;
 
     if (_.isObject(value)) {
-      if (_.isArray(value)) {
+      if (Array.isArray(value)) {
         value.forEach((arrItem, index) => {
           if (_.isObject(arrItem)) {
             flattenAttributes(vehicle, arrItem, `${fullKey}_${index}`);
-          } else if (isValidValue(arrItem)) {
-            vehicle[`${fullKey}_${index}`] = arrItem as string | boolean | number;
+          } else if (isDefined(arrItem)) {
+            vehicle[`${fullKey}_${index}`] = arrItem as PrimitiveTypes;
           }
         });
       } else {
         flattenAttributes(vehicle, value, fullKey);
       }
-    } else if (isValidValue(value)) {
-      vehicle[fullKey.toString()] = value as string | boolean | number;
+    } else if (isDefined(value)) {
+      vehicle[fullKey.toString()] = value as PrimitiveTypes;
     }
   }
 
   return vehicle;
 };
 
-export const createTimestampRecord = (newImage: LegacyTechRecord, record: SingleTechRecord) => {
-  const vehicle: NewKeyStructure = {
+export const createTimestampRecord = (newImage: LegacyVehicleRecord, record: LegacyTechnicalRecord) => {
+  const vehicle: NewVehicleRecord = {
     systemNumber: newImage.systemNumber,
     createdTimestamp: record.createdAt,
   };
     
   for (const [key, value] of Object.entries(newImage)) {
-    if (key !== 'techRecord' && isValidValue(key)) {
-      vehicle[key.toString()] = value as string | boolean | number;
+    if (key !== 'techRecord' && isDefined(key)) {
+      vehicle[key.toString()] = value as PrimitiveTypes;
     }
   }
     
