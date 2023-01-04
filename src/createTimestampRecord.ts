@@ -21,21 +21,23 @@ const flattenAttributes = (vehicle: NewVehicleRecord, recordPiece: object, prefi
     }
     const fullKey = `${prefix}_${key}`;
 
-    if (_.isObject(value)) {
-      if (Array.isArray(value)) {
-        value.forEach((arrItem, index) => {
-          if (_.isObject(arrItem)) {
-            flattenAttributes(vehicle, arrItem, `${fullKey}_${index}`);
-          } else if (isDefined(arrItem)) {
-            vehicle[`${fullKey}_${index}`] = arrItem as PrimitiveTypes;
-          }
-        });
-      } else {
-        flattenAttributes(vehicle, value, fullKey);
-      }
-    } else if (isDefined(value)) {
+    if (!_.isObject(value)) {
       vehicle[fullKey.toString()] = value as PrimitiveTypes;
+      continue;
     }
+
+    if (!Array.isArray(value)) {
+      flattenAttributes(vehicle, value, fullKey);
+      continue;
+    }
+
+    value.forEach((arrItem, index) => {
+      if (_.isObject(arrItem)) {
+        flattenAttributes(vehicle, arrItem, `${fullKey}_${index}`);
+      } else if (isDefined(arrItem)) {
+        vehicle[`${fullKey}_${index}`] = arrItem as PrimitiveTypes;
+      }
+    });
   }
 
   return vehicle;
