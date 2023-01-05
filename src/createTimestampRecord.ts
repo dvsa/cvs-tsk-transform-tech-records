@@ -1,48 +1,54 @@
 import logger from './util/logger';
-import _ from 'lodash';
 import { LegacyVehicleRecord, LegacyTechnicalRecord } from './interfaces/LegacyVehicleRecord';
 import { NewVehicleRecord } from './interfaces/NewVehicleRecord';
 import { PrimitiveTypes } from './interfaces/PrimitiveTypes';
 
-const flattenAttributes = (vehicle: NewVehicleRecord, recordPiece: object, prefix: string) => {
+const isObject = (a: unknown): a is object => {
+  const type = typeof a;
+  return type !== 'function' && type === 'object';
+};
+
+const isPrimitive = (a: unknown): a is PrimitiveTypes => {
+  return a === null || a.constructor == String || a.constructor == Number || a.constructor == Boolean;
+};
+
+const addAttributeToVehicle = (newVehicleRecord: NewVehicleRecord, item: unknown, index: string) => {
+  if (isPrimitive(item)) {
+    newVehicleRecord[index] = item;
+  } else if (isObject(item)) {
+    flattenAttributes(newVehicleRecord, item, index);
+  }
+};
+
+const flattenAttributes = (newVehicleRecord: NewVehicleRecord, recordPiece: object, prefix: string) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   for (const [key, value] of Object.entries(recordPiece)) {
     const fullKey = `${prefix}_${key}`;
 
-    if (!_.isObject(value)) {
-      vehicle[fullKey.toString()] = value as PrimitiveTypes;
-      continue;
+    if (Array.isArray(value)) {
+      value.forEach((arrItem, index) => {
+        addAttributeToVehicle(newVehicleRecord, arrItem, `${fullKey}_${index}`);
+      });
+    } else {
+      addAttributeToVehicle(newVehicleRecord, value, fullKey);
     }
-
-    if (!Array.isArray(value)) {
-      flattenAttributes(vehicle, value, fullKey);
-      continue;
-    }
-
-    value.forEach((arrItem, index) => {
-      if (_.isObject(arrItem)) {
-        flattenAttributes(vehicle, arrItem, `${fullKey}_${index}`);
-      } else {
-        vehicle[`${fullKey}_${index}`] = arrItem as PrimitiveTypes;
-      }
-    });
   }
 
-  return vehicle;
+  return newVehicleRecord;
 };
 
-export const createTimestampRecord = (newImage: LegacyVehicleRecord, record: LegacyTechnicalRecord) => {
-  const vehicle: NewVehicleRecord = {
+export const createTimestampRecord = (newImage: LegacyVehicleRecord, legacyTechnicalRecord: LegacyTechnicalRecord) => {
+  const newVehicleRecord: NewVehicleRecord = {
     systemNumber: newImage.systemNumber,
-    createdTimestamp: record.createdAt,
+    createdTimestamp: legacyTechnicalRecord.createdAt,
   };
     
   for (const [key, value] of Object.entries(newImage)) {
     if (key !== 'techRecord') {
-      vehicle[key.toString()] = value as PrimitiveTypes;
+      newVehicleRecord[key.toString()] = value as PrimitiveTypes;
     }
   }
     
   logger.info('flattening techRecord');
-  return flattenAttributes(vehicle, record, 'techRecord');
+  return flattenAttributes(newVehicleRecord, legacyTechnicalRecord, 'techRecord');
 };

@@ -1,7 +1,6 @@
 import { LegacyVehicleRecord } from '../src/interfaces/LegacyVehicleRecord';
 import { DynamoDB } from 'aws-sdk';
 import { createTimestampRecord } from '../src/createTimestampRecord';
-import _ from 'lodash';
 
 const dbRecord = {
   dynamodb: {
@@ -45,7 +44,7 @@ const dbRecord = {
                             'S': 'single',
                           },
                           'plyRating': {
-                            'S': 'AB',
+                            'NULL': true,
                           },
                           'speedCategorySymbol': {
                             'S': 'a7',
@@ -444,7 +443,7 @@ const transformedRecord = {
   techRecord_axles_0_axleNumber: 1,
   techRecord_axles_0_tyres_dataTrAxles: 345,
   techRecord_axles_0_tyres_fitmentCode: 'single',
-  techRecord_axles_0_tyres_plyRating: 'AB',
+  techRecord_axles_0_tyres_plyRating: null,
   techRecord_axles_0_tyres_speedCategorySymbol: 'a7',
   techRecord_axles_0_tyres_tyreCode: 1234,
   techRecord_axles_0_tyres_tyreSize: '9.23648E+11',
@@ -559,7 +558,7 @@ describe('createTimestampRecord', () => {
         : typeof(entry) === 'number' ? true
           : Array.isArray(entry) ? true 
             : typeof(entry) === 'boolean' ? true
-              : _.isNull(entry) ? true 
+              : entry === null ? true 
                 : false;
     });
       
