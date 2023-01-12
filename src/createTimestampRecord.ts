@@ -14,7 +14,7 @@ const isPrimitive = (a: unknown): a is PrimitiveTypes => {
 
 const addAttributeToVehicle = (newVehicleRecord: NewVehicleRecord, item: unknown, index: string) => {
   if (isPrimitive(item)) {
-    newVehicleRecord[index] = item;
+    newVehicleRecord[index.toString()] = item;
   } else if (isObject(item)) {
     flattenAttributes(newVehicleRecord, item, index);
   }
