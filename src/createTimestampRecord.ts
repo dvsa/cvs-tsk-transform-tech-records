@@ -1,57 +1,54 @@
 import logger from './util/logger';
-import _ from 'lodash';
-import { LegacyTechRecord, SingleTechRecord } from './Interfaces/ILegacyTechRecord';
-import { NewKeyStructure } from './Interfaces/INewTechRecord';
+import { LegacyVehicleRecord, LegacyTechnicalRecord } from './interfaces/LegacyVehicleRecord';
+import { NewVehicleRecord } from './interfaces/NewVehicleRecord';
+import { PrimitiveTypes } from './interfaces/PrimitiveTypes';
 
-const isValidValue = (a: unknown) => {
-  return a !== null && a !== undefined && (_.isString(a) || _.isNumber(a) || _.isBoolean(a));
+const isObject = (a: unknown): a is object => {
+  const type = typeof a;
+  return type !== 'function' && type === 'object';
 };
 
-const flattenAttributes = (vehicle: NewKeyStructure, recordPiece: object, prefix: string) => {
-  if (recordPiece === null || recordPiece === undefined) {
-    return;
+const isPrimitive = (a: unknown): a is PrimitiveTypes => {
+  return a === null || a.constructor == String || a.constructor == Number || a.constructor == Boolean;
+};
+
+const addAttributeToVehicle = (newVehicleRecord: NewVehicleRecord, item: unknown, index: string) => {
+  if (isPrimitive(item)) {
+    newVehicleRecord[index.toString()] = item;
+  } else if (isObject(item)) {
+    flattenAttributes(newVehicleRecord, item, index);
   }
-  
+};
+
+const flattenAttributes = (newVehicleRecord: NewVehicleRecord, recordPiece: object, prefix: string) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   for (const [key, value] of Object.entries(recordPiece)) {
-    if (value === null || value === undefined) {
-      logger.debug(`skipping ${key}`);
-      continue;
-    }
     const fullKey = `${prefix}_${key}`;
 
-    if (_.isObject(value)) {
-      if (_.isArray(value)) {
-        value.forEach((arrItem, index) => {
-          if (_.isObject(arrItem)) {
-            flattenAttributes(vehicle, arrItem, `${fullKey}_${index}`);
-          } else if (isValidValue(arrItem)) {
-            vehicle[`${fullKey}_${index}`] = arrItem as string | boolean | number;
-          }
-        });
-      } else {
-        flattenAttributes(vehicle, value, fullKey);
-      }
-    } else if (isValidValue(value)) {
-      vehicle[fullKey.toString()] = value as string | boolean | number;
+    if (Array.isArray(value)) {
+      value.forEach((arrItem, index) => {
+        addAttributeToVehicle(newVehicleRecord, arrItem, `${fullKey}_${index}`);
+      });
+    } else {
+      addAttributeToVehicle(newVehicleRecord, value, fullKey);
     }
   }
 
-  return vehicle;
+  return newVehicleRecord;
 };
 
-export const createTimestampRecord = (newImage: LegacyTechRecord, record: SingleTechRecord) => {
-  const vehicle: NewKeyStructure = {
+export const createTimestampRecord = (newImage: LegacyVehicleRecord, legacyTechnicalRecord: LegacyTechnicalRecord) => {
+  const newVehicleRecord: NewVehicleRecord = {
     systemNumber: newImage.systemNumber,
-    createdTimestamp: record.createdAt,
+    createdTimestamp: legacyTechnicalRecord.createdAt,
   };
     
   for (const [key, value] of Object.entries(newImage)) {
-    if (key !== 'techRecord' && isValidValue(key)) {
-      vehicle[key.toString()] = value as string | boolean | number;
+    if (key !== 'techRecord') {
+      newVehicleRecord[key.toString()] = value as PrimitiveTypes;
     }
   }
     
   logger.info('flattening techRecord');
-  return flattenAttributes(vehicle, record, 'techRecord');
+  return flattenAttributes(newVehicleRecord, legacyTechnicalRecord, 'techRecord');
 };

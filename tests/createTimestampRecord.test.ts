@@ -1,4 +1,4 @@
-import { LegacyTechRecord } from '../src/Interfaces/ILegacyTechRecord';
+import { LegacyVehicleRecord } from '../src/interfaces/LegacyVehicleRecord';
 import { DynamoDB } from 'aws-sdk';
 import { createTimestampRecord } from '../src/createTimestampRecord';
 
@@ -44,7 +44,7 @@ const dbRecord = {
                             'S': 'single',
                           },
                           'plyRating': {
-                            'S': 'AB',
+                            'NULL': true,
                           },
                           'speedCategorySymbol': {
                             'S': 'a7',
@@ -443,7 +443,7 @@ const transformedRecord = {
   techRecord_axles_0_axleNumber: 1,
   techRecord_axles_0_tyres_dataTrAxles: 345,
   techRecord_axles_0_tyres_fitmentCode: 'single',
-  techRecord_axles_0_tyres_plyRating: 'AB',
+  techRecord_axles_0_tyres_plyRating: null,
   techRecord_axles_0_tyres_speedCategorySymbol: 'a7',
   techRecord_axles_0_tyres_tyreCode: 1234,
   techRecord_axles_0_tyres_tyreSize: '9.23648E+11',
@@ -526,6 +526,7 @@ const transformedRecord = {
   techRecord_noOfAxles: 5,
   techRecord_notes: 'test notes',
   techRecord_ntaNumber: '123456',
+  techRecord_numberOfWheelsDriven: null,
   techRecord_reasonForCreation: 'new vehicle',
   techRecord_recordCompleteness: 'complete',
   techRecord_regnDate: '2019-06-24',
@@ -546,25 +547,26 @@ const transformedRecord = {
 
 describe('createTimestampRecord', () => {
   it('should return a 1 dimensional object (excluding arrays for secondaryVrms field) with no undefined values', () => {
-    const newImage = DynamoDB.Converter.unmarshall(dbRecord.dynamodb.NewImage) as LegacyTechRecord;
+    const newImage = DynamoDB.Converter.unmarshall(dbRecord.dynamodb.NewImage) as LegacyVehicleRecord;
     const techRecords = newImage.techRecord;
     delete newImage.techRecord;
     const result = createTimestampRecord(newImage, techRecords[0]);
       
-    // Ensure result only contains: string, number, array or boolean types. No objects
+    // Ensure result only contains: string, number, array, null or boolean types. No objects
     const expectation = Object.values(result).every(entry => {
       return typeof(entry) === 'string' ? true 
         : typeof(entry) === 'number' ? true
           : Array.isArray(entry) ? true 
             : typeof(entry) === 'boolean' ? true
-              : false;
+              : entry === null ? true 
+                : false;
     });
       
     expect(expectation).toBeTruthy();
   });
   
   it('should transform the dynamodb record correctly', () => {
-    const newImage = DynamoDB.Converter.unmarshall(dbRecord.dynamodb.NewImage) as LegacyTechRecord;
+    const newImage = DynamoDB.Converter.unmarshall(dbRecord.dynamodb.NewImage) as LegacyVehicleRecord;
     const techRecords = newImage.techRecord;
     delete newImage.techRecord;
     const result = createTimestampRecord(newImage, techRecords[0]);

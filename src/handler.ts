@@ -1,7 +1,7 @@
 import { DynamoDBStreamEvent } from 'aws-lambda';
 import { DynamoDB } from 'aws-sdk';
 import { createTimestampRecord } from './createTimestampRecord';
-import { LegacyTechRecord } from './Interfaces/ILegacyTechRecord';
+import { LegacyVehicleRecord } from './interfaces/LegacyVehicleRecord';
 import logger from './util/logger';
 import config from './config';
 
@@ -20,7 +20,7 @@ const handler = async (event: DynamoDBStreamEvent): Promise<void> => {
       continue;
     }
 
-    const newImage = DynamoDB.Converter.unmarshall(dbRecord.dynamodb.NewImage) as LegacyTechRecord;
+    const newImage = DynamoDB.Converter.unmarshall(dbRecord.dynamodb.NewImage) as LegacyVehicleRecord;
 
     const techRecords = newImage.techRecord;
 
