@@ -49,6 +49,6 @@ export const createTimestampRecord = (newImage: LegacyVehicleRecord, legacyTechn
     }
   }
     
-  logger.info('flattening techRecord');
+  logger.info(`Flattening techRecord with createdAt: ${legacyTechnicalRecord.createdAt}`);
   return flattenAttributes(newVehicleRecord, legacyTechnicalRecord, 'techRecord');
 };

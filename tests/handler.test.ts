@@ -12,6 +12,7 @@ const removeEvent: DynamoDBStreamEvent = {
 
 const insertEvent: DynamoDBStreamEvent = {
   Records: [{
+    eventID: '22222',
     eventName: 'INSERT',
     dynamodb: {
       NewImage: {
@@ -55,6 +56,7 @@ const insertEvent: DynamoDBStreamEvent = {
 
 const twoTechRecordsEvent: DynamoDBStreamEvent = {
   Records: [{
+    eventID: '22222',
     eventName: 'INSERT',
     dynamodb: {
       NewImage: {
@@ -122,6 +124,29 @@ const twoTechRecordsEvent: DynamoDBStreamEvent = {
   }],
 };
 
+const twoDynamoDbRecordEvent = {
+  Records: [
+    ...twoTechRecordsEvent.Records,
+    ...twoTechRecordsEvent.Records,
+  ],
+};
+
+function returnResolvedPromise() {
+  return { 
+    promise() {
+      return Promise.resolve({});
+    },
+  };
+}
+
+function returnRejectedPromise() {
+  return { 
+    promise() {
+      return Promise.reject(new Error(''));
+    },
+  };
+}
+
 describe('handler', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -130,59 +155,66 @@ describe('handler', () => {
   it('should not process REMOVE stream events', async () => {
     // @ts-ignore
     const consoleSpy = jest.spyOn(console._stdout, 'write');
+    DynamoDB.DocumentClient.prototype.put = jest.fn().mockImplementation(() => returnResolvedPromise());
 
     await handler(removeEvent);
 
-    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: remove event - ignoring${EOL}`);
-    expect(consoleSpy).toHaveBeenNthCalledWith(3, `info: Data processed successfully; good: 0, bad: 0${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(3, `info: REMOVE event - ignoring${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(4, `info: flat-tech-records processed; succeeded: 0, failed: 0${EOL}`);
+    expect(DynamoDB.DocumentClient.prototype.put).toHaveBeenCalledTimes(0);
   });
 
   it('should process INSERT stream events and put to dynamodb', async () => {
     // @ts-ignore
     const consoleSpy = jest.spyOn(console._stdout, 'write');
-    DynamoDB.DocumentClient.prototype.put = jest.fn().mockImplementation(() => {
-      return { 
-        promise() {
-          return Promise.resolve({});
-        },
-      };
-    });
+    DynamoDB.DocumentClient.prototype.put = jest.fn().mockImplementation(() => returnResolvedPromise());
 
     await handler(insertEvent);
-    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: processing 1 records${EOL}`);
-    expect(consoleSpy).toHaveBeenNthCalledWith(5, `info: Data processed successfully; good: 1, bad: 0${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: Received 1 records from technical-records DynamoDB${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(5, `info: Tech record with systemNumber: 11000017 and createdTimestamp: 2019-06-24T10:26:54.903Z succesfully sent to DynamoDB${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(6, `info: flat-tech-records processed; succeeded: 1, failed: 0${EOL}`);
+    expect(DynamoDB.DocumentClient.prototype.put).toHaveBeenCalledTimes(1);
   });
 
   it('should send two record to dynamodb when there are 2 tech records within the base tech record', async () => {
     // @ts-ignore
     const consoleSpy = jest.spyOn(console._stdout, 'write');
-    DynamoDB.DocumentClient.prototype.put = jest.fn().mockImplementation(() => {
-      return { 
-        promise() {
-          return Promise.resolve({});
-        },
-      };
-    });
+    DynamoDB.DocumentClient.prototype.put = jest.fn().mockImplementation(() => returnResolvedPromise());
 
     await handler(twoTechRecordsEvent);
-    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: processing 2 records${EOL}`);
-    expect(consoleSpy).toHaveBeenNthCalledWith(7, `info: Data processed successfully; good: 2, bad: 0${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: Received 1 records from technical-records DynamoDB${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(6, `info: Tech record with systemNumber: 11000017 and createdTimestamp: 2019-06-24T10:26:54.903Z succesfully sent to DynamoDB${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(7, `info: Tech record with systemNumber: 11000017 and createdTimestamp: 2019-06-24T10:26:54.903Z succesfully sent to DynamoDB${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(8, `info: flat-tech-records processed; succeeded: 2, failed: 0${EOL}`);
+    expect(DynamoDB.DocumentClient.prototype.put).toHaveBeenCalledTimes(2);
   });
 
   it('should catch error and not put to dynamodb', async () => {
     // @ts-ignore
     const consoleSpy = jest.spyOn(console._stdout, 'write');
-    DynamoDB.DocumentClient.prototype.put = jest.fn().mockImplementation(() => {
-      return { 
-        promise() {
-          return Promise.reject(new Error(''));
-        },
-      };
-    });
+    DynamoDB.DocumentClient.prototype.put = jest.fn().mockImplementation(() => returnRejectedPromise());
     
-    await handler(insertEvent);
-    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: processing 1 records${EOL}`);
-    expect(consoleSpy).toHaveBeenNthCalledWith(5, `info: Data processed successfully; good: 0, bad: 1${EOL}`);
+    const res = await handler(insertEvent);
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: Received 1 records from technical-records DynamoDB${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(5, `error: Tech record with systemNumber: 11000017 and createdTimestamp: 2019-06-24T10:26:54.903Z unsuccesfully sent to DynamoDB, will attempt to retry DynamoDB record${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(7, `info: flat-tech-records processed; succeeded: 0, failed: 1${EOL}`);
+    expect(DynamoDB.DocumentClient.prototype.put).toHaveBeenCalledTimes(1);
+    expect(res).toEqual({ batchItemFailures: [ { itemIdentifier: '22222' } ] });
+  });
+
+  it('should send 3 records to dynamodb when lambda receives 2 dynamodb records where each contain 2 tech records but 1 flattened tech record fails to be put on dynamo', async () => {
+    // @ts-ignore
+    const consoleSpy = jest.spyOn(console._stdout, 'write');
+    DynamoDB.DocumentClient.prototype.put = jest.fn()
+      .mockImplementationOnce(() => returnResolvedPromise())
+      .mockImplementationOnce(() => returnRejectedPromise())
+      .mockImplementation(() => returnResolvedPromise());
+    
+    const res = await handler(twoDynamoDbRecordEvent);
+    expect(consoleSpy).toHaveBeenNthCalledWith(2, `info: Received 2 records from technical-records DynamoDB${EOL}`);
+    expect(consoleSpy).toHaveBeenNthCalledWith(14, `info: flat-tech-records processed; succeeded: 3, failed: 1${EOL}`);
+    expect(DynamoDB.DocumentClient.prototype.put).toHaveBeenCalledTimes(4);
+    expect(res).toEqual({ batchItemFailures: [ { itemIdentifier: '22222' } ] });
   });
 });
 
