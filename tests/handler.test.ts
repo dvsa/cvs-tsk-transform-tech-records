@@ -137,8 +137,8 @@ const removeAndInsertEvent = {
     ...twoTechRecordsEvent.Records,
     ...removeEvent.Records,
     ...twoTechRecordsEvent.Records,
-  ]
-}
+  ],
+};
 
 function returnResolvedPromise() {
   return { 
@@ -187,8 +187,8 @@ describe('handler', () => {
       expect(consoleSpy).toHaveBeenNthCalledWith(8, `info: Processing 2 tech records for vehicle with systemNumber: 11000017 and vin: undefined${EOL}`);
       expect(consoleSpy).toHaveBeenNthCalledWith(15, `info: flat-tech-records processed; succeeded: 4, failed: 0${EOL}`);
       expect(DynamoDB.DocumentClient.prototype.put).toHaveBeenCalledTimes(4);
-    })
-  })
+    });
+  });
 
   it('should process INSERT stream events and put to dynamodb', async () => {
     // @ts-ignore

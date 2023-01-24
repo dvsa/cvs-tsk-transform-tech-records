@@ -52,7 +52,7 @@ const handler = async (event: DynamoDBStreamEvent): Promise<BatchItemFailuresRes
         }
       });
     });
-  }, [] as Promise<unknown>[])
+  }, [] as Promise<unknown>[]);
 
   await Promise.allSettled(dynamoDbPromises);
 
