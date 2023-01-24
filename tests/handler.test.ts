@@ -131,6 +131,15 @@ const twoDynamoDbRecordEvent = {
   ],
 };
 
+const removeAndInsertEvent = {
+  Records: [
+    ...removeEvent.Records,
+    ...twoTechRecordsEvent.Records,
+    ...removeEvent.Records,
+    ...twoTechRecordsEvent.Records,
+  ]
+}
+
 function returnResolvedPromise() {
   return { 
     promise() {
@@ -163,6 +172,23 @@ describe('handler', () => {
     expect(consoleSpy).toHaveBeenNthCalledWith(4, `info: flat-tech-records processed; succeeded: 0, failed: 0${EOL}`);
     expect(DynamoDB.DocumentClient.prototype.put).toHaveBeenCalledTimes(0);
   });
+
+  describe('when receiving REMOVE and INSERT stream events in same batch', () => {
+    it('should process INSERT event and ignore remove event', async () => {
+      // @ts-ignore
+      const consoleSpy = jest.spyOn(console._stdout, 'write');
+      DynamoDB.DocumentClient.prototype.put = jest.fn().mockImplementation(() => returnResolvedPromise());
+
+      await handler(removeAndInsertEvent);
+
+      expect(consoleSpy).toHaveBeenNthCalledWith(3, `info: REMOVE event - ignoring${EOL}`);
+      expect(consoleSpy).toHaveBeenNthCalledWith(4, `info: Processing 2 tech records for vehicle with systemNumber: 11000017 and vin: undefined${EOL}`);
+      expect(consoleSpy).toHaveBeenNthCalledWith(7, `info: REMOVE event - ignoring${EOL}`);
+      expect(consoleSpy).toHaveBeenNthCalledWith(8, `info: Processing 2 tech records for vehicle with systemNumber: 11000017 and vin: undefined${EOL}`);
+      expect(consoleSpy).toHaveBeenNthCalledWith(15, `info: flat-tech-records processed; succeeded: 4, failed: 0${EOL}`);
+      expect(DynamoDB.DocumentClient.prototype.put).toHaveBeenCalledTimes(4);
+    })
+  })
 
   it('should process INSERT stream events and put to dynamodb', async () => {
     // @ts-ignore
