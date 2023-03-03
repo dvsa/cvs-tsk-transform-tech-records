@@ -322,10 +322,10 @@ const dbRecord = {
               'euroStandard': {
                 'S': '7',
               },
-              'frontAxleTo5thWheelCouplingMax': {
+              'frontVehicleTo5thWheelCouplingMax': {
                 'N': '1900',
               },
-              'frontAxleTo5thWheelCouplingMin': {
+              'frontVehicleTo5thWheelCouplingMin': {
                 'N': '1700',
               },
               'frontAxleTo5thWheelMax': {
@@ -510,8 +510,8 @@ const transformedRecord = {
   techRecord_dimensions_width: 2200,
   techRecord_drawbarCouplingFitted: true,
   techRecord_euroStandard: '7',
-  techRecord_frontAxleTo5thWheelCouplingMax: 1900,
-  techRecord_frontAxleTo5thWheelCouplingMin: 1700,
+  techRecord_frontVehicleTo5thWheelCouplingMax: 1900,
+  techRecord_frontVehicleTo5thWheelCouplingMin: 1700,
   techRecord_frontAxleTo5thWheelMax: 1500,
   techRecord_frontAxleTo5thWheelMin: 1200,
   techRecord_functionCode: 'A',
@@ -551,26 +551,26 @@ describe('createTimestampRecord', () => {
     const techRecords = newImage.techRecord;
     delete newImage.techRecord;
     const result = createTimestampRecord(newImage, techRecords[0]);
-      
+
     // Ensure result only contains: string, number, array, null or boolean types. No objects
     const expectation = Object.values(result).every(entry => {
-      return typeof(entry) === 'string' ? true 
+      return typeof(entry) === 'string' ? true
         : typeof(entry) === 'number' ? true
-          : Array.isArray(entry) ? true 
+          : Array.isArray(entry) ? true
             : typeof(entry) === 'boolean' ? true
-              : entry === null ? true 
+              : entry === null ? true
                 : false;
     });
-      
+
     expect(expectation).toBeTruthy();
   });
-  
+
   it('should transform the dynamodb record correctly', () => {
     const newImage = DynamoDB.Converter.unmarshall(dbRecord.dynamodb.NewImage) as LegacyVehicleRecord;
     const techRecords = newImage.techRecord;
     delete newImage.techRecord;
     const result = createTimestampRecord(newImage, techRecords[0]);
-  
+
     expect(result).toEqual(transformedRecord);
   });
 });
