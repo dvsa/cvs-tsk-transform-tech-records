@@ -4,7 +4,7 @@ on:
  push:
    branches: ['develop','feature/CB2-10772']
  pull_request:
-   branches: ['develop']
+   branches: ['develop','feature/CB2-10772']
 
 jobs:
   scanner:
