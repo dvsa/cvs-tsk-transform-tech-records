@@ -43,7 +43,7 @@ A technical record from the technical-records DynamoDB can contain multiple vers
 ---
 ## Running the project
 ### Dependencies
-The project runs on node 14.x with typescript. For further details about project dependencies, please refer to the `package.json` file.
+The project runs on node 18.x with typescript. For further details about project dependencies, please refer to the `package.json` file.
 
 Once the dependencies are installed (`npm install`), you will be required to rename the `.env.example` file to `.env.local` as we use dotenv files for configuration for local local development for example. Further information about [variables](https://www.serverless.com/framework/docs/providers/aws/guide/variables/) and [environment variables](https://www.serverless.com/framework/docs/environment-variables/) with serverless.
 Please note that multiple `.env` files can be created per environments. Our current development environment is 'local'.
