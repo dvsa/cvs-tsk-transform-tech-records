@@ -29,7 +29,7 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.1128.0",
-    "winston": "^3.7.2"
+    "winston": "^3.13.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^16.2.4",
